@@ -35,9 +35,9 @@ def send_whapi_request(endpoint, params=None, method='POST'):
     url = f"{os.getenv('API_URL')}/{endpoint}"
     if params:
         if 'media' in params:
-            file_path = params.pop('media')
-            with open(file_path, 'rb') as file:
-                m = MultipartEncoder(fields={**params, 'media': (file_path, file, 'application/octet-stream')})
+            details = params.pop('media').split(';')
+            with open(details[0], 'rb') as file:
+                m = MultipartEncoder(fields={**params, 'media': (details[0], file, details[1])})
                 headers['Content-Type'] = m.content_type
                 response = requests.request(method, url, data=m, headers=headers)
         elif method == 'GET':
@@ -70,10 +70,11 @@ def set_hook():
 def handle_new_messages():
     try:
         messages = request.json.get('messages', [])
+        endpoint = None
         for message in messages:
             if message.get('from_me'):
                 continue
-            sender = {'to': message.get('from')}
+            sender = {'to': message.get('chat_id')}
             command_input = message.get('text', {}).get('body', '').strip()
             command = list(COMMANDS.keys())[int(command_input) - 1] if command_input.isdigit() else None
 
@@ -82,15 +83,15 @@ def handle_new_messages():
                 endpoint = 'messages/text'
             elif command == 'IMAGE':
                 sender['caption'] = 'Text under the photo.'
-                sender['media'] = FILES['IMAGE']
+                sender['media'] = FILES['IMAGE'] + ';image/jpeg'
                 endpoint = 'messages/image'
             elif command == 'DOCUMENT':
                 sender['caption'] = 'Text under the document.'
-                sender['media'] = FILES['DOCUMENT']
+                sender['media'] = FILES['DOCUMENT'] + ';application/pdf'
                 endpoint = 'messages/document'
             elif command == 'VIDEO':
                 sender['caption'] = 'Text under the video.'
-                sender['media'] = FILES['VIDEO']
+                sender['media'] = FILES['VIDEO'] + ';video/mp4'
                 endpoint = 'messages/video'
             elif command == 'CONTACT':
                 sender['name'] = 'Whapi Test'
@@ -103,7 +104,7 @@ def handle_new_messages():
                 endpoint = f'business/products/{product_id}'
             elif command == 'GROUP_CREATE':
                 # Example: You need to replace config.phone with an actual phone number
-                participants = [message.get('from')]  # Replace with the phone number
+                participants = [message.get('chat_id').split('@')[0]]  # Replace with the phone number
                 response = send_whapi_request('groups', {'subject': 'Whapi.Cloud Test', 'participants': participants})
                 sender['body'] = f"Group created. Group id: {response.get('group_id')}" if response.get('group_id') else 'Error'
                 endpoint = 'messages/text'
@@ -121,11 +122,14 @@ def handle_new_messages():
                                  '\n'.join(f"{i + 1}. {text}" for i, text in enumerate(COMMANDS.values()))
                 endpoint = 'messages/text'
 
+        if endpoint is None:
+            return 'Ok', 200
         response = send_whapi_request(endpoint, sender)
         print(f"Response from Whapi: {response}")
         return 'Ok', 200
     
     except Exception as e:
+        print(e)
         return str(e), 500
 
 

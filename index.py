@@ -66,7 +66,7 @@ def set_hook():
         send_whapi_request('settings', settings, 'PATCH')
 
 
-@app.route('/messages', methods=['POST'])
+@app.route('/hook/messages', methods=['POST'])
 def handle_new_messages():
     try:
         messages = request.json.get('messages', [])

@@ -57,7 +57,7 @@ def set_hook():
                 {
                     'url': os.getenv('BOT_URL'),
                     'events': [
-                        {'type': "message", 'method': "post"}
+                        {'type': "messages", 'method': "post"}
                     ],
                     'mode': "method"
                 }

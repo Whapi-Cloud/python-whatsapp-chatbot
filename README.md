@@ -14,6 +14,8 @@ A feature-rich WhatsApp bot built with Python and Flask, leveraging the Whapi.Cl
 - Receive and process incoming messages
 - **Chat with OpenAI ChatGPT using the /AI command**
 
+![whatsapp-bot-example](https://github.com/user-attachments/assets/b3163e88-9742-48a7-b161-3fb30df7cb7b)
+
 <em>For the bot to work, it is <b>NOT REQUIRED</b> that the phone is turned on or online. Connect your WhatsApp and test the integration comfortably!</em> <br/> For support, visit: https://whapi.cloud/features
 
 ## Getting Started
